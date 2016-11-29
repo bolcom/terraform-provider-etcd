@@ -7,7 +7,7 @@ output "etcd" {
 }
 
 provider "etcd" {
-    endpoint = "http://localhost:2379"
+    endpoints = "http://localhost:2379"
 }
 
 # Access a key in Consul

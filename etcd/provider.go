@@ -11,10 +11,47 @@ import (
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"endpoint": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "http://127.0.0.1:2379",
+			"scheme": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "http",
+				Description: "http or https",
+			},
+			"endpoints": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "127.0.0.1:2379",
+				Description: "multiple etcd endpoints separated by comma",
+			},
+			"username": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+				Description: "Etcd username",
+			},
+			"password": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+				Description: "Etcd password",
+			},
+			"keyfile": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+				Description: "File location keyfile",
+			},
+			"certfile": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+				Description: "File location certfile",
+			},
+			"cacertfile": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+				Description: "File location cacert",
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
