@@ -1,0 +1,3 @@
+provider "etcd" {
+  endpoints = "PLACEHOLDER"
+}
