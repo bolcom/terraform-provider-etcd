@@ -19,14 +19,20 @@ type Config struct {
 	Keyfile    string `mapstructure:"keyfile"`
 	Certfile   string `mapstructure:"certfile"`
 	CACertfile string `mapstructure:"cacertfile"`
+	Username   string `mapstructure:"username"`
+	Password   string `mapstructure:"password"`
 }
 
 // Client() returns a new client for accessing etcd.
 func (cfg *Config) Client() (client.KeysAPI, error) {
 
-	log.Printf("[INFO] Etcd configured with endpoints: %s", cfg.Endpoints)
+	eps := strings.Split(cfg.Endpoints, ",")
+	endpoints := make([]string, len(eps))
+	for i, ep := range eps {
+		endpoints[i] = cfg.Scheme + "://" + ep
+	}
 
-	endpoints := strings.Split(cfg.Endpoints, ",")
+	log.Printf("[INFO] Etcd configured with endpoints: %s", endpoints)
 
 	var transport client.CancelableTransport
 	switch cfg.Scheme {
@@ -34,6 +40,8 @@ func (cfg *Config) Client() (client.KeysAPI, error) {
 		transport = newHTTPTransport()
 	case "https":
 		transport = newHTTPSTransport(cfg.Certfile, cfg.Keyfile, cfg.CACertfile)
+	default:
+		log.Fatal("[ERROR] Only schemes http and https are supported")
 	}
 
 	config := client.Config{
@@ -43,12 +51,18 @@ func (cfg *Config) Client() (client.KeysAPI, error) {
 		HeaderTimeoutPerRequest: time.Second,
 	}
 
+	if len(cfg.Username) > 0 {
+		config.Username = cfg.Username
+		config.Password = cfg.Password
+	}
+
 	c, err := client.New(config)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return client.NewKeysAPI(c), nil
+	kv := client.NewKeysAPI(c)
+	return kv, nil
 }
 
 func newHTTPTransport() client.CancelableTransport {

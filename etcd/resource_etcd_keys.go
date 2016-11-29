@@ -47,12 +47,6 @@ func resourceEtcdKeys() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-
-						"delete": &schema.Schema{
-							Type:     schema.TypeBool,
-							Optional: true,
-							Default:  false,
-						},
 					},
 				},
 				Set: resourceEtcdKeysHash,
@@ -159,15 +153,9 @@ func resourceEtcdKeysDelete(d *schema.ResourceData, meta interface{}) error {
 	// Extract the keys
 	keys := d.Get("key").(*schema.Set).List()
 	for _, raw := range keys {
-		_, path, sub, err := parseKey(raw)
+		_, path, _, err := parseKey(raw)
 		if err != nil {
 			return err
-		}
-
-		// Ignore if the key is non-managed
-		shouldDelete, ok := sub["delete"].(bool)
-		if !ok || !shouldDelete {
-			continue
 		}
 
 		log.Printf("[DEBUG] Deleting etcd key '%s'", path)
