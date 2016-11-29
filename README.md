@@ -10,6 +10,46 @@ $ go get github.com/bolcom/terraform-provider-etcd
 
 ## Usage
 
+### Provider
+
+```
+"scheme": {
+	Optional:    true,
+	Default:     "http",
+	Description: "http or https",
+},
+"endpoints": {
+	Optional:    true,
+	Default:     "127.0.0.1:2379",
+	Description: "multiple etcd endpoints separated by comma",
+},
+"username": {
+	Optional:    true,
+	Default:     "",
+	Description: "Etcd username",
+},
+"password": {
+	Optional:    true,
+	Default:     "",
+	Description: "Etcd password",
+},
+"keyfile": {
+	Optional:    true,
+	Default:     "",
+	Description: "File location keyfile",
+},
+"certfile": {
+	Optional:    true,
+	Default:     "",
+	Description: "File location certfile",
+},
+"cacertfile": {
+	Optional:    true,
+	Default:     "",
+	Description: "File location cacert",
+},
+```
+
 ### Discovery
 
 Simple usage:
