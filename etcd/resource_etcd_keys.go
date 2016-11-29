@@ -7,8 +7,9 @@ import (
 	"log"
 	"strconv"
 
-	etcdErr "github.com/coreos/etcd/error"
-	client "github.com/coreos/go-etcd/etcd"
+	"golang.org/x/net/context"
+
+	client "github.com/coreos/etcd/client"
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -74,7 +75,7 @@ func resourceEtcdKeysHash(v interface{}) int {
 }
 
 func resourceEtcdKeysCreate(d *schema.ResourceData, meta interface{}) error {
-	c := meta.(*client.Client)
+	c := meta.(client.KeysAPI)
 
 	// Store the computed vars
 	vars := make(map[string]string)
@@ -90,7 +91,7 @@ func resourceEtcdKeysCreate(d *schema.ResourceData, meta interface{}) error {
 		value := sub["value"].(string)
 		if value != "" {
 			log.Printf("[DEBUG] setting etcd key '%s' to '%v", path, value, d)
-			if _, err := c.Set(path, value, 0); err != nil {
+			if _, err := c.Set(context.Background(), path, value, nil); err != nil {
 				return fmt.Errorf("Failed to set etcd key '%s': %v", path, err)
 			}
 			vars[key] = value
@@ -98,7 +99,7 @@ func resourceEtcdKeysCreate(d *schema.ResourceData, meta interface{}) error {
 
 		} else {
 			log.Printf("[DEBUG] Getting etcd key '%s'", path)
-			resp, err := c.Get(path, false, false)
+			resp, err := c.Get(context.Background(), path, nil)
 			if err != nil && !IsKeyNotFound(err) {
 				return fmt.Errorf("Failed to get etcd key '%s': %v", path, err)
 			}
@@ -118,7 +119,8 @@ func resourceEtcdKeysCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceEtcdKeysRead(d *schema.ResourceData, meta interface{}) error {
-	c := meta.(*client.Client)
+	c := meta.(client.KeysAPI)
+
 	// Store the computed vars
 	vars := make(map[string]string)
 
@@ -132,7 +134,7 @@ func resourceEtcdKeysRead(d *schema.ResourceData, meta interface{}) error {
 
 		log.Printf("[DEBUG] Refreshing etcd value of key '%s", path)
 
-		resp, err := c.Get(path, false, false)
+		resp, err := c.Get(context.Background(), path, nil)
 		if err != nil && !IsKeyNotFound(err) {
 			return fmt.Errorf("Failed to get value for path '%s' from etcd: %v", path, err)
 		}
@@ -152,7 +154,7 @@ func resourceEtcdKeysRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceEtcdKeysDelete(d *schema.ResourceData, meta interface{}) error {
-	c := meta.(*client.Client)
+	c := meta.(client.KeysAPI)
 
 	// Extract the keys
 	keys := d.Get("key").(*schema.Set).List()
@@ -170,7 +172,7 @@ func resourceEtcdKeysDelete(d *schema.ResourceData, meta interface{}) error {
 
 		log.Printf("[DEBUG] Deleting etcd key '%s'", path)
 
-		if _, err := c.Delete(path, false); err != nil && !IsKeyNotFound(err) {
+		if _, err := c.Delete(context.Background(), path, nil); err != nil && !IsKeyNotFound(err) {
 			return fmt.Errorf("Failed to delete etcd key '%s': %v", path, err)
 		}
 	}
@@ -227,6 +229,6 @@ func attributeValue(sub map[string]interface{}, key string, resp *client.Respons
 }
 
 func IsKeyNotFound(err error) bool {
-	e, ok := err.(*client.EtcdError)
-	return ok && e.ErrorCode == etcdErr.EcodeKeyNotFound
+	e, ok := err.(client.Error)
+	return ok && e.Code == client.ErrorCodeKeyNotFound
 }

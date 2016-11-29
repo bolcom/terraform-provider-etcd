@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/bakins/terraform-provider-etcd/etcd"
+	"github.com/bolcom/terraform-provider-etcd/etcd"
 
 	"github.com/hashicorp/terraform/plugin"
 )
