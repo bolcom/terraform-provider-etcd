@@ -5,7 +5,9 @@
 ## Install
 
 ```
-$ go get github.com/bolcom/terraform-provider-etcd
+$ git clone https://github.com/bolcom/terraform-provider-etcd
+$ cd terraform-provider-etcd
+$ ./build_for_terraform_version.sh 0.7.11 #insert your terraform version here
 ```
 
 ## Usage
